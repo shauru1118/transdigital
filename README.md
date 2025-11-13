@@ -1,3 +1,7 @@
+# TransDigital
+## ТрансДиджитал
+API находится на [transdigital.pythonanywhere.com](https://transdigital.pythonanywhere.com/)
+
 ## Документация API для фронтенд-разработчика
 
 ### Общая информация
@@ -7,7 +11,6 @@
 * **Endpoint**: `/api/`
 * **Метод**: POST (если не указано иное)
 * **Формат данных**: JSON
-* **Порт сервера**: 5000
 
 ### Доступные эндпоинты
 
@@ -21,7 +24,7 @@
 
 **Пример запроса**:
 ```javascript
-fetch('/api/add_user/rotor', {
+fetch('https://transdigital.pythonanywhere.com/api/add_user/rotor', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json'
@@ -56,7 +59,7 @@ fetch('/api/add_user/rotor', {
 
 **Пример запроса**:
 ```javascript
-fetch('/api/update_user/rotor', {
+fetch('https://transdigital.pythonanywhere.com/api/update_user/rotor', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json'
@@ -77,7 +80,7 @@ fetch('/api/update_user/rotor', {
 
 **Пример запроса**:
 ```javascript
-fetch('/api/delete_user/rotor', {
+fetch('https://transdigital.pythonanywhere.com/api/delete_user/rotor', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json'
