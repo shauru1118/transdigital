@@ -1,154 +1,251 @@
-# TransDigital
-## ТрансДиджитал
-API находится на [transdigital.pythonanywhere.com](https://transdigital.pythonanywhere.com/)
+# Документация по API для фронтенда
 
-## Документация API для фронтенд-разработчика
-
-### Общая информация
-Документация описывает API для работы с пользователями в системе. Все запросы выполняются методом POST.
-
-### Базовые параметры
-* **Endpoint**: `/api/`
-* **Метод**: POST (если не указано иное)
-* **Формат данных**: JSON
-
-### Доступные эндпоинты
-
-#### 1. Добавление пользователя
-**URL**: `/api/add_user/{company}`
-
-**Параметры**:
-* **company** (path) - название компании
-* **name** (body) - имя пользователя
-* **password** (body) - пароль пользователя
-
-**Пример запроса**:
-```javascript
-fetch('https://transdigital.pythonanywhere.com/api/add_user/rotor', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json'
-  },
-  body: JSON.stringify({
-    name: 'testuser',
-    password: '123456'
-  })
-})
+## Базовый URL
+```
+https://transdigital.pythonanywhere.com
 ```
 
-**Ответ**:
+## Общая информация
+
+API предоставляет интерфейс для управления пользователями компаний. Все запросы, кроме GET, используют метод POST и принимают данные в формате JSON.
+
+## Эндпоинты
+
+### 1. Добавление пользователя
+**Endpoint:** `POST /api/add_user/<company>`
+
+**Параметры:**
+- `company` (string) - название компании (например: "rotor")
+
+**Тело запроса (JSON):**
 ```json
 {
-  "status": "ok",
-  "message": "user added"
-}
-// или
-{
-  "status": "error",
-  "message": "user already exists"
+    "name": "string",
+    "password": "string", 
+    "post": "string",
+    "account": "string",
+    "vk": "string",
+    "disciplinary_actions": "string",
+    "note": "string"
 }
 ```
 
-#### 2. Обновление пользователя
-**URL**: `/api/update_user/{company}`
-
-**Параметры**:
-* **company** (path) - название компании
-* **name** (body) - имя пользователя
-* **password** (body) - новый пароль
-
-**Пример запроса**:
-```javascript
-fetch('https://transdigital.pythonanywhere.com/api/update_user/rotor', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json'
-  },
-  body: JSON.stringify({
-    name: 'testuser',
-    password: 'newpassword'
-  })
-})
-```
-
-#### 3. Удаление пользователя
-**URL**: `/api/delete_user/{company}`
-
-**Параметры**:
-* **company** (path) - название компании
-* **name** (body) - имя пользователя
-
-**Пример запроса**:
-```javascript
-fetch('https://transdigital.pythonanywhere.com/api/delete_user/rotor', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json'
-  },
-  body: JSON.stringify({
-    name: 'testuser'
-  })
-})
-```
-
-#### 4. Получение информации о пользователе
-**URL**: `/api/get_user/{company}`
-
-**Параметры**:
-* **company** (path) - название компании
-* **name** (body) - имя пользователя
-
-**Пример ответа**:
+**Ответ:**
 ```json
 {
-  "status": "ok",
-  "id": "1",
-  "name": "testuser",
-  "password": "123456"
+    "status": "ok",
+    "message": "user added"
+}
+```
+или
+```json
+{
+    "status": "error",
+    "message": "error description"
 }
 ```
 
-#### 5. Получение всех пользователей
-**URL**: `/api/get_all_users/{company}`
+---
 
-**Параметры**:
-* **company** (path) - название компании
+### 2. Обновление пользователя
+**Endpoint:** `POST /api/update_user/<company>`
 
-**Пример ответа**:
+**Параметры:**
+- `company` (string) - название компании
+
+**Тело запроса (JSON):**
 ```json
 {
-  "status": "ok",
-  "users": [
-    {
-      "id": "1",
-      "name": "testuser",
-      "password": "123456"
+    "name": "string",
+    "password": "string",
+    "post": "string", 
+    "account": "string",
+    "vk": "string",
+    "disciplinary_actions": "string",
+    "note": "string"
+}
+```
+
+**Ответ:**
+```json
+{
+    "status": "ok", 
+    "message": "user updated"
+}
+```
+или
+```json
+{
+    "status": "error",
+    "message": "error description"
+}
+```
+
+---
+
+### 3. Удаление пользователя
+**Endpoint:** `POST /api/delete_user/<company>`
+
+**Параметры:**
+- `company` (string) - название компании
+
+**Тело запроса (JSON):**
+```json
+{
+    "name": "string"
+}
+```
+
+**Ответ:**
+```json
+{
+    "status": "ok",
+    "message": "user deleted"
+}
+```
+или
+```json
+{
+    "status": "error", 
+    "message": "error description"
+}
+```
+
+---
+
+### 4. Получение базовой информации о пользователе
+**Endpoint:** `POST /api/get_user/<company>`
+
+**Параметры:**
+- `company` (string) - название компании
+
+**Тело запроса (JSON):**
+```json
+{
+    "name": "string"
+}
+```
+
+**Ответ:**
+```json
+{
+    "status": "ok",
+    "name": "string",
+    "password": "string"
+}
+```
+или
+```json
+{
+    "status": "error",
+    "message": "error description"
+}
+```
+
+---
+
+### 5. Получение расширенной информации о пользователе
+**Endpoint:** `POST /api/get_user_info/<company>`
+
+**Параметры:**
+- `company` (string) - название компании
+
+**Тело запроса (JSON):**
+```json
+{
+    "name": "string"
+}
+```
+
+**Ответ:**
+```json
+{
+    "status": "ok",
+    "name": "string",
+    "post": "string",
+    "account": "string", 
+    "vk": "string",
+    "disciplinary_actions": "string",
+    "note": "string"
+}
+```
+или
+```json
+{
+    "status": "error",
+    "message": "error description"
+}
+```
+
+---
+
+### 6. Получение информации о всех пользователях компании
+**Endpoint:** `GET /api/get_users_info/<company>`
+
+**Параметры:**
+- `company` (string) - название компании
+
+**Тело запроса:** не требуется
+
+**Ответ:**
+```json
+{
+    "status": "ok",
+    "users": [
+        {
+            "name": "string",
+            "post": "string",
+            "account": "string",
+            "vk": "string", 
+            "disciplinary_actions": "string",
+            "note": "string"
+        }
+    ]
+}
+```
+или
+```json
+{
+    "status": "error",
+    "message": "error description"
+}
+```
+
+## Коды ошибок
+
+- `some fields are empty` - не все обязательные поля заполнены
+- `company does not exist` - указанная компания не существует
+- `user already exists` - пользователь с таким именем уже существует
+- `user does not exist` - пользователь не найден
+- `no users found` - в компании нет пользователей
+
+## Пример использования
+
+```javascript
+// Добавление пользователя
+const response = await fetch('https://transdigital.pythonanywhere.com/api/add_user/rotor', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
     },
-    {
-      "id": "2",
-      "name": "admin",
-      "password": "adminpass"
-    }
-  ]
-}
+    body: JSON.stringify({
+        name: 'Иван Иванов',
+        password: 'password123',
+        post: 'Менеджер',
+        account: 'ivanov_i',
+        vk: 'vk.com/ivanov',
+        disciplinary_actions: 'Нет',
+        note: 'Пример заметки'
+    })
+});
+
+const result = await response.json();
+console.log(result);
 ```
 
-### Обработка ошибок
-Все ошибки возвращаются в следующем формате:
-```json
-{
-  "status": "error",
-  "message": "описание ошибки"
-}
-```
+## Примечания
 
-Возможные ошибки:
-* **name or password is empty** - пустые обязательные поля
-* **company does not exist** - несуществующая компания
-* **user does not exist** - пользователь не найден
-* **user already exists** - пользователь уже существует
-
-### Рекомендации
-1. Всегда проверяйте статус ответа перед обработкой данных
-2. Обрабатывайте ошибки на стороне фронтенда
-3. Используйте валидацию данных перед отправкой на сервер
+- Все строковые поля обязательны для заполнения
+- Название компании в URL должно соответствовать зарегистрированным компаниям
+- Для работы с API необходимо корректно обрабатывать CORS
+- Все данные передаются в кодировке UTF-8
