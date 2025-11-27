@@ -41,7 +41,8 @@ def get_db_path(file_name:str):
     return os.path.join(DB_DIR, DB_FILES[file_name])
 
 def add_user(file_name:str, name:str, password:str, post:str, account:str, vk:str, disciplinary_actions:str, note:str):
-    if len(get_user(file_name, name)) > 0:
+    ans = get_user(file_name, name)
+    if ans["status"] == "ok":
         return {
             "status":"error",
             "message":"user already exists"
@@ -154,9 +155,6 @@ def update_user(file_name:str, name:str, password:str, post:str, account:str, vk
 
 if __name__ == "__main__":
     INIT()
-    print(get_users_info(get_db_path("rotor")))
-    delete_user(get_db_path("rotor"), "admin")
-    print(get_users_info(get_db_path("rotor")))
-    # delete_user(get_db_path("rotor"), "admin")
-    # print(get_user(get_db_path("rotor"), "admin"))
+    print(get_user("database/rotor.db", "albert"))
+    print(get_users_info("database/rotor.db"))
 
