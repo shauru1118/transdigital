@@ -20,12 +20,15 @@ def add_user(company:str):
     post = data["post"]
     account = data["account"]
     vk = data["vk"]
-    disciplinary_actions = data["disciplinary_actions"]
+    if "disciplinary_actions" in data:
+        disciplinary_actions = data["disciplinary_actions"]
+    else:
+        disciplinary_actions = "0"
     if "note" in data:
         note = data["note"]
     else:
         note = "-"
-    if not name or not password or not post or not account or not vk or not disciplinary_actions:
+    if not name or not password or not post or not account or not vk or not disciplinary_actions or not note:
         return jsonify({"status":"error", "message":"some fields are empty"})
     if database.get_db_path(company) == "":
         return jsonify({"status":"error", "message":"company does not exist"})
@@ -40,7 +43,10 @@ def update_user(company:str):
     account = data["account"]
     vk = data["vk"]
     disciplinary_actions = data["disciplinary_actions"]
-    note = data["note"]
+    if "note" in data:
+        note = data["note"]
+    else:
+        note = "-"
     if not name or not password or not post or not account or not vk or not disciplinary_actions or not note:
         return jsonify({"status":"error", "message":"name or password is empty"})
     if database.get_db_path(company) == "":
