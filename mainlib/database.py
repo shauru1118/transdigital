@@ -34,11 +34,18 @@ def INIT():
         create_table(db_path, "users", "name TEXT, password TEXT")
         create_table(db_path, "users_info", "id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, post TEXT, " + 
                      "account TEXT, vk TEXT, disciplinary_actions TEXT, note TEXT")
+        create_table(db_path, "vehicles", 
+        "number INTEGER PRIMARY KEY AUTOINCREMENT, board_number TEXT, state_number TEXT, model TEXT, built TEXT, since TEXT, note TEXT, state TEXT, owner TEXT")
+
+
+#* db
 
 def get_db_path(file_name:str):
     if file_name not in DB_FILES:
         return ""
     return os.path.join(DB_DIR, DB_FILES[file_name])
+
+#* users
 
 def add_user(file_name:str, name:str, password:str, post:str, account:str, vk:str, disciplinary_actions:str, note:str):
     ans = get_user(file_name, name)
@@ -153,8 +160,124 @@ def update_user(file_name:str, name:str, password:str, post:str, account:str, vk
     }
 
 
+#* vehicles
+
+def add_vehicle(file_name:str, board_number:str, state_number:str, model:str, built:str, since:str, note:str, state:str, owner:str):
+    ans = get_vehicle(file_name, None, board_number)
+    if ans["status"] == "ok":
+        return {
+            "status":"error",
+            "message":"vehicle already exists"
+        }
+    cmd = "INSERT INTO vehicles (board_number, state_number, model, built, since, note, state, owner) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+    values = (board_number, state_number, model, built, since, note, state, owner)
+
+    do_cmd(file_name, cmd, values)
+    return {
+        "status":"ok",
+        "message":"vehicle added"
+    }
+
+def get_vehicle(file_name:str, number:str|None=None, board_number:str|None=None):
+    if board_number is not None:
+        print(board_number)
+        cmd = f"SELECT * FROM vehicles WHERE board_number = ?"
+        values = (board_number,)
+        ans = do_cmd(file_name, cmd, values)
+    else:
+        print(number)
+        cmd = f"SELECT * FROM vehicles WHERE number = ?"
+        values = (number,)
+        ans = do_cmd(file_name, cmd, values)
+    print(ans)
+    if len(ans) == 0:
+        return {
+            "status":"error",
+            "message":"vehicle does not exist"
+        }
+    vehicle = ans[0]
+    return {
+        "status":"ok",
+        "number":str(vehicle[0]),
+        "board_number":str(vehicle[1]),
+        "state_number":str(vehicle[2]),
+        "model":str(vehicle[3]),
+        "built":str(vehicle[4]),
+        "since":str(vehicle[5]),
+        "note":str(vehicle[6]),
+        "state":str(vehicle[7]),
+        "owner":str(vehicle[8])
+    }
+
+def get_vehicles(file_name:str):
+    cmd = f"SELECT * FROM vehicles"
+    ans = do_cmd(file_name, cmd)
+    if len(ans) == 0:
+        return {
+            "status":"error",
+            "message":"no vehicles found"
+        }
+    vehicles = []
+    for vehicle in ans:
+        vehicles.append({
+            "number":str(vehicle[0]),
+            "board_number":str(vehicle[1]),
+            "state_number":str(vehicle[2]),
+            "model":str(vehicle[3]),
+            "built":str(vehicle[4]),
+            "since":str(vehicle[5]),
+            "note":str(vehicle[6]),
+            "state":str(vehicle[7]),
+            "owner":str(vehicle[8])
+        })
+    return {
+        "status":"ok",
+        "vehicles":vehicles
+    }
+
+def delete_vehicle(file_name:str, number:str):
+    if get_vehicle(file_name, number)["status"] == "error":
+        return {
+            "status":"error",
+            "message":"vehicle does not exist"
+        }
+    cmd = f"DELETE FROM vehicles WHERE number = ?"
+    values = (number,)
+    do_cmd(file_name, cmd, values)
+    return {
+        "status":"ok",
+        "message":"vehicle deleted"
+    }
+
+def update_vehicle(file_name:str, number:str, board_number:str, state_number:str, model:str, built:str, since:str, note:str, state:str, owner:str):
+    ans = get_vehicle(file_name, number, None)
+    if ans["status"] == "error":
+        return {
+            "status":"error",
+            "message":"vehicle does not exist"
+        }
+    board_number = board_number or ans["board_number"]
+    state_number = state_number or ans["state_number"]
+    model = model or ans["model"]
+    built = built or ans["built"]
+    since = since or ans["since"]
+    note = note or ans["note"]
+    state = state or ans["state"]
+    owner = owner or ans["owner"]
+    cmd = f"UPDATE vehicles SET board_number = ?, state_number = ?, model = ?, built = ?, since = ?, note = ?, state = ?, owner = ? WHERE number = ?"
+    values = (board_number, state_number, model, built, since, note, state, owner, number)
+    do_cmd(file_name, cmd, values)
+    return {
+        "status":"ok",
+        "message":"vehicle updated"
+    }
+
 if __name__ == "__main__":
     INIT()
-    print(get_user("database/rotor.db", "albert"))
-    print(get_users_info("database/rotor.db"))
+    # print(get_user("database/rotor.db", "albert"))
+    # print(get_users_info("database/rotor.db"))
+    from pprint import pprint
+    # print(add_vehicle("database/rotor.db", "numddrr", "", "", "", "", "", "", ""))
+    print(update_vehicle("database/rotor.db", "3", "numddrr", "", "", "45", "", "", "4555", "alik"))
+    pprint(get_vehicles("database/rotor.db"))
 

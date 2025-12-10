@@ -12,6 +12,8 @@ app.config["JSON_AS_ASCII"] = False
 app.config["JSON_SORT_KEYS"] = False
 
 
+#* users
+
 @app.route("/api/add_user/<string:company>", methods=["POST"])
 def add_user(company:str):
     data = request.get_json()
@@ -88,6 +90,48 @@ def get_users_info(company:str):
     if database.get_db_path(company) == "":
         return jsonify({"status":"error", "message":"company does not exist"})
     return jsonify(database.get_users_info(database.get_db_path(company)))
+
+
+#* vehicles
+
+@app.route("/api/add_vehicle/<string:company>", methods=["POST"])
+def add_vehicle(company:str):
+    data = request.get_json()
+    board_number = data.get("board_number", "")
+    state_number = data.get("state_number", "")
+    model = data.get("model", "")
+    built = data.get("built", "")
+    since = data.get("since", "")
+    note = data.get("note", "")
+    state = data.get("state", "")
+    owner = data.get("owner", "")
+    if not board_number:
+        return jsonify({"status":"error", "message":"board_number is empty"})
+    if database.get_db_path(company) == "":
+        return jsonify({"status":"error", "message":"company does not exist"})
+    return jsonify(database.add_vehicle(database.get_db_path(company), board_number, state_number, model, built, since, note, state, owner))
+
+@app.route("/api/get_vehicles/<string:company>", methods=["GET"])
+def get_vehicles(company:str):
+    if database.get_db_path(company) == "":
+        return jsonify({"status":"error", "message":"company does not exist"})
+    return jsonify(database.get_vehicles(database.get_db_path(company)))
+
+@app.route("/api/update_vehicle/<string:company>", methods=["POST"])
+def update_vehicle(company:str):
+    data = request.get_json()
+    number = data.get("number", "")
+    board_number = data.get("board_number", "")
+    state_number = data.get("state_number", "")
+    model = data.get("model", "")
+    built = data.get("built", "")
+    since = data.get("since", "")
+    note = data.get("note", "")
+    state = data.get("state", "")
+    owner = data.get("owner", "")
+    if database.get_db_path(company) == "":
+        return jsonify({"status":"error", "message":"company does not exist"})
+    return jsonify(database.update_vehicle(database.get_db_path(company), number, board_number, state_number, model, built, since, note, state, owner))
 
 if __name__ == "__main__":
     app.run("0.0.0.0", 5000, debug=True)
