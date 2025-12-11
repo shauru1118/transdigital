@@ -133,5 +133,13 @@ def update_vehicle(company:str):
         return jsonify({"status":"error", "message":"company does not exist"})
     return jsonify(database.update_vehicle(database.get_db_path(company), number, board_number, state_number, model, built, since, note, state, owner))
 
+@app.route("/api/delete_vehicle/<string:company>", methods=["POST"])
+def delete_vehicle(company:str):
+    data = request.get_json()
+    number = data.get("number", "")
+    if database.get_db_path(company) == "":
+        return jsonify({"status":"error", "message":"company does not exist"})
+    return jsonify(database.delete_vehicle(database.get_db_path(company), number))
+
 if __name__ == "__main__":
     app.run("0.0.0.0", 5000, debug=True)

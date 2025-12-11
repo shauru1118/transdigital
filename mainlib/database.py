@@ -180,16 +180,13 @@ def add_vehicle(file_name:str, board_number:str, state_number:str, model:str, bu
 
 def get_vehicle(file_name:str, number:str|None=None, board_number:str|None=None):
     if board_number is not None:
-        print(board_number)
         cmd = f"SELECT * FROM vehicles WHERE board_number = ?"
         values = (board_number,)
         ans = do_cmd(file_name, cmd, values)
     else:
-        print(number)
         cmd = f"SELECT * FROM vehicles WHERE number = ?"
         values = (number,)
         ans = do_cmd(file_name, cmd, values)
-    print(ans)
     if len(ans) == 0:
         return {
             "status":"error",
