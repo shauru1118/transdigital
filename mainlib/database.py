@@ -63,7 +63,7 @@ def delete_company(name:str):
     del DB_FILES[name]
     with open("companys/list.txt", "w+") as f:
         for key in DB_FILES.keys():
-            f.write(f"{key} {DB_FILES[key]}\n")
+            f.write(f"{key}\n")
     os.remove(os.path.join(DB_DIR, DB_FILES[name]))
     return {
         "status":"ok",
