@@ -46,7 +46,7 @@ def add_company(name:str):
         }
     name = name.lower()
     DB_FILES[name] = f"{name}.db"
-    with open("companys/list.txt", "w+") as f:
+    with open("companys/list.txt", "a") as f:
         f.write(f"{name}\n")
     INIT()
     return {
