@@ -12,7 +12,7 @@ app.config["JSON_AS_ASCII"] = False
 app.config["JSON_SORT_KEYS"] = False
 
 
-#* add company
+#* companys
 
 @app.route("/api/add_company", methods=["POST"])
 def add_company():
@@ -23,6 +23,17 @@ def add_company():
     if database.get_db_path(company) != "":
         return jsonify({"status":"error", "message":"company already exists"})
     return jsonify(database.add_company(company))
+
+@app.route("/api/delete_company", methods=["POST"])
+def delete_company():
+    data = request.get_json()
+    company = data.get("company", "")
+    if not company:
+        return jsonify({"status":"error", "message":"company name is empty"})
+    if database.get_db_path(company) == "":
+        return jsonify({"status":"error", "message":"company does not exist"})
+    return jsonify(database.delete_company(company))
+
 
 #* users
 

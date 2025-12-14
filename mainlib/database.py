@@ -2,8 +2,8 @@ import sqlite3
 import os
 
 
-DB_DIR = "database"
-DB_FILES = {}
+DB_DIR:str = "database"
+DB_FILES:dict = dict()
 
 os.makedirs(DB_DIR, exist_ok=True)
 os.makedirs("companys", exist_ok=True)
@@ -53,6 +53,23 @@ def add_company(name:str):
         "status":"ok",
         "message":"company added"
     }
+
+def delete_company(name:str):
+    if name not in DB_FILES:
+        return {
+            "status":"error",
+            "message":"company does not exist"
+        }
+    del DB_FILES[name]
+    with open("companys/list.txt", "w+") as f:
+        for key in DB_FILES.keys():
+            f.write(f"{key} {DB_FILES[key]}\n")
+    os.remove(os.path.join(DB_DIR, DB_FILES[name]))
+    return {
+        "status":"ok",
+        "message":"company deleted"
+    }
+
 def create_table(file_name:str, table_name:str, variables:str):
     cmd = f"""
 CREATE TABLE IF NOT EXISTS {table_name} (
