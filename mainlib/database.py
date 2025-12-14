@@ -3,9 +3,8 @@ import os
 
 
 DB_DIR = "database"
-DB_FILES = {
-    "rotor":"rotor.db"
-}
+
+DB_FILES = { line.split()[0]:line.split()[1] for line in open("companys/list.txt").readlines() }
 
 os.makedirs(DB_DIR, exist_ok=True)
 
