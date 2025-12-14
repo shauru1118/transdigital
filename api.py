@@ -12,6 +12,18 @@ app.config["JSON_AS_ASCII"] = False
 app.config["JSON_SORT_KEYS"] = False
 
 
+#* add company
+
+@app.route("/api/add_company", methods=["POST"])
+def add_company():
+    data = request.get_json()
+    company = data.get("company", "")
+    if not company:
+        return jsonify({"status":"error", "message":"company name is empty"})
+    if database.get_db_path(company) != "":
+        return jsonify({"status":"error", "message":"company already exists"})
+    return jsonify(database.add_company(company))
+
 #* users
 
 @app.route("/api/add_user/<string:company>", methods=["POST"])
@@ -143,4 +155,3 @@ def delete_vehicle(company:str):
 
 if __name__ == "__main__":
     app.run("0.0.0.0", 5000, debug=True)
-    

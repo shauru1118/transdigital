@@ -3,10 +3,25 @@ import os
 
 
 DB_DIR = "database"
-
-DB_FILES = { line.split()[0]:line.split()[1] for line in open("companys/list.txt").readlines() }
+DB_FILES = {}
 
 os.makedirs(DB_DIR, exist_ok=True)
+os.makedirs("companys", exist_ok=True)
+
+if not os.path.exists("companys/list.txt"):
+    with open("companys/list.txt", "w+") as f:
+        f.write("")
+
+with open("companys/list.txt", "r") as f:
+    for line in f.readlines():
+        if line.strip() == "":
+            continue
+        if len(line.split()) != 2:
+            name = line.strip()
+            DB_FILES[name] = f"{name}.db"
+        else:
+            name, db_file = line.strip().split(" ")
+            DB_FILES[name] = db_file
 
 def do_cmd(file_name:str, cmd:str, values:tuple=tuple()):
     connection = sqlite3.connect(file_name)
@@ -18,6 +33,26 @@ def do_cmd(file_name:str, cmd:str, values:tuple=tuple()):
     connection.close()
     return result
 
+def add_company(name:str):
+    if name in DB_FILES:
+        return {
+            "status":"error",
+            "message":"company already exists"
+        }
+    if name.count(" ") != 0:
+        return {
+            "status":"error",
+            "message":"company name cannot contain spaces"
+        }
+    name = name.lower()
+    DB_FILES[name] = f"{name}.db"
+    with open("companys/list.txt", "w+") as f:
+        f.write(f"{name}\n")
+    INIT()
+    return {
+        "status":"ok",
+        "message":"company added"
+    }
 def create_table(file_name:str, table_name:str, variables:str):
     cmd = f"""
 CREATE TABLE IF NOT EXISTS {table_name} (
