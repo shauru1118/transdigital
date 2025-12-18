@@ -87,6 +87,7 @@ def INIT():
                      "account TEXT, vk TEXT, disciplinary_actions TEXT, note TEXT")
         create_table(db_path, "vehicles", 
         "number INTEGER PRIMARY KEY AUTOINCREMENT, board_number TEXT, state_number TEXT, model TEXT, built TEXT, since TEXT, note TEXT, state TEXT, owner TEXT")
+        create_table(db_path, "routes", "id INTEGER PRIMARY KEY AUTOINCREMENT, route TEXT")
 
 
 #* db
@@ -319,6 +320,60 @@ def update_vehicle(file_name:str, number:str, board_number:str, state_number:str
         "status":"ok",
         "message":"vehicle updated"
     }
+
+
+#* routes
+
+def get_routes(file_name:str):
+    cmd = f"SELECT * FROM routes"
+    ans = do_cmd(file_name, cmd)
+    if len(ans) == 0:
+        return {
+            "status":"error",
+            "message":"no routes found"
+        }
+    routes = []
+    for route in ans:
+        routes.append(str(route[1]))
+    return {
+        "status":"ok",
+        "routes":routes
+    }
+
+def add_route(file_name:str, route:str):
+    ans = get_routes(file_name)
+    if ans["status"] != "error" and route in ans["routes"]:
+        return {
+            "status":"error",
+            "message":"route already exists"
+        }
+    cmd = "INSERT INTO routes (route) VALUES (?)"
+    values = (route,)
+    do_cmd(file_name, cmd, values)
+    return {
+        "status":"ok",
+        "message":"route added"
+    }
+
+def delete_route(file_name:str, route:str):
+    ans = get_routes(file_name)
+    if route not in ans["routes"]:
+        return {
+            "status":"error",
+            "message":"route does not exist"
+        }
+    cmd = f"DELETE FROM routes WHERE route = ?"
+    values = (route,)
+    do_cmd(file_name, cmd, values)
+    return {
+        "status":"ok",
+        "message":"route deleted"
+    }
+
+
+
+
+
 
 if __name__ == "__main__":
     INIT()

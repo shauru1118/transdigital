@@ -164,5 +164,37 @@ def delete_vehicle(company:str):
         return jsonify({"status":"error", "message":"company does not exist"})
     return jsonify(database.delete_vehicle(database.get_db_path(company), number))
 
+
+#* routes
+
+@app.route("/api/get_routes/<string:company>", methods=["GET"])
+def get_routes(company:str):
+    if database.get_db_path(company) == "":
+        return jsonify({"status":"error", "message":"company does not exist"})
+    return jsonify(database.get_routes(database.get_db_path(company)))
+
+@app.route("/api/add_route/<string:company>", methods=["POST"])
+def add_route(company:str):
+    data = request.get_json()
+    route = data.get("route", "")
+    if not route:
+        return jsonify({"status":"error", "message":"route is empty"})
+    if database.get_db_path(company) == "":
+        return jsonify({"status":"error", "message":"company does not exist"})
+    return jsonify(database.add_route(database.get_db_path(company), route))
+
+@app.route("/api/delete_route/<string:company>", methods=["POST"])
+def delete_route(company:str):
+    data = request.get_json()
+    route = data.get("route", "")
+    if not route:
+        return jsonify({"status":"error", "message":"route is empty"})
+    if database.get_db_path(company) == "":
+        return jsonify({"status":"error", "message":"company does not exist"})
+    return jsonify(database.delete_route(database.get_db_path(company), route))
+
+
+
+
 if __name__ == "__main__":
     app.run("0.0.0.0", 5000, debug=True)
