@@ -194,6 +194,61 @@ def delete_route(company:str):
     return jsonify(database.delete_route(database.get_db_path(company), route))
 
 
+#* reports 
+
+@app.route("/api/get_reports/<string:company>", methods=["GET"])
+def get_reports(company:str):
+    if database.get_db_path(company) == "":
+        return jsonify({"status":"error", "message":"company does not exist"})
+    return jsonify(database.get_reports(database.get_db_path(company)))
+
+@app.route("/api/add_report/<string:company>", methods=["POST"])
+def add_report(company:str):
+    data = request.get_json()
+    user_name = data.get("user_name", "")
+    date = data.get("date", "")
+    route = data.get("route", "")
+    num_round_trip = data.get("num_round_trip", "")
+    num_passengers = data.get("num_passengers", "")
+    proof = data.get("proof", "")
+    if not all([user_name, date, route, num_round_trip, num_passengers, proof]):
+        return jsonify({"status":"error", "message":"some fields are empty"})
+    if database.get_db_path(company) == "":
+        return jsonify({"status":"error", "message":"company does not exist"})
+    return jsonify(database.add_report(database.get_db_path(company), user_name, date, route, num_round_trip, num_passengers, proof))
+
+@app.route("/api/delete_report/<string:company>", methods=["POST"])
+def delete_report(company:str):
+    data = request.get_json()
+    id = data.get("id", "")
+    if not id:
+        return jsonify({"status":"error", "message":"id is empty"})
+    if database.get_db_path(company) == "":
+        return jsonify({"status":"error", "message":"company does not exist"})
+    return jsonify(database.delete_report(database.get_db_path(company), id))
+
+@app.route("/api/verify_report/<string:company>", methods=["POST"])
+def verify_report(company:str):
+    data = request.get_json()
+    id = data.get("id", "")
+    if not id:
+        return jsonify({"status":"error", "message":"id is empty"})
+    if database.get_db_path(company) == "":
+        return jsonify({"status":"error", "message":"company does not exist"})
+    return jsonify(database.verify_report(database.get_db_path(company), id))
+
+@app.route("/api/reject_report/<string:company>", methods=["POST"])
+def reject_report(company:str):
+    data = request.get_json()
+    id = data.get("id", "")
+    if not id:
+        return jsonify({"status":"error", "message":"id is empty"})
+    if database.get_db_path(company) == "":
+        return jsonify({"status":"error", "message":"company does not exist"})
+    return jsonify(database.reject_report(database.get_db_path(company), id))
+
+
+
 
 
 if __name__ == "__main__":

@@ -88,7 +88,8 @@ def INIT():
         create_table(db_path, "vehicles", 
         "number INTEGER PRIMARY KEY AUTOINCREMENT, board_number TEXT, state_number TEXT, model TEXT, built TEXT, since TEXT, note TEXT, state TEXT, owner TEXT")
         create_table(db_path, "routes", "id INTEGER PRIMARY KEY AUTOINCREMENT, route TEXT")
-
+        create_table(db_path, "reports", "id INTEGER PRIMARY KEY AUTOINCREMENT, " \
+        "user_name TEXT, date TEXT, route TEXT, num_round_trips TEXT, num_passengers TEXT, proof TEXT, status TEXT")
 
 #* db
 
@@ -370,6 +371,69 @@ def delete_route(file_name:str, route:str):
         "message":"route deleted"
     }
 
+
+#* reports
+
+def get_reports(file_name:str):
+    cmd = f"SELECT * FROM reports"
+    ans = do_cmd(file_name, cmd)
+    if len(ans) == 0:
+        return {
+            "status":"error",
+            "message":"no reports found"
+        }
+    reports = []
+    for report in ans:
+        reports.append({
+            "id":str(report[0]),
+            "user_name":str(report[1]),
+            "date":str(report[2]),
+            "route":str(report[3]),
+            "num_round_trips":str(report[4]),
+            "num_passengers":str(report[5]),
+            "proof":str(report[6]),
+            "status":str(report[7])
+        })
+    return {
+        "status":"ok",
+        "reports":reports
+    }
+
+def add_report(file_name:str, user_name:str, date:str, route:str, num_round_trip:str, num_passengers:str, proof:str):
+    cmd = "INSERT INTO reports (user_name, date, route, num_round_trips, num_passengers, proof, status) VALUES (?, ?, ?, ?, ?, ?, ?)"
+    values = (user_name, date, route, num_round_trip, num_passengers, proof, "not verified")
+    do_cmd(file_name, cmd, values)
+    return {
+        "status":"ok",
+        "message":"report added"
+    }
+
+def delete_report(file_name:str, id:str):
+    cmd = f"DELETE FROM reports WHERE id = ?"
+    values = (id,)
+    do_cmd(file_name, cmd, values)
+    return {
+        "status":"ok",
+        "message":"report deleted"
+    }
+
+def verify_report(file_name:str, id:str):
+    cmd = f"UPDATE reports SET status = ? WHERE id = ?"
+    values = ("verified", id)
+    do_cmd(file_name, cmd, values)
+    return {
+        "status":"ok",
+        "message":"report verified"
+    }
+
+def reject_report(file_name:str, id:str):
+    cmd = f"UPDATE reports SET status = ? WHERE id = ?"
+    values = ("rejected", id)
+    do_cmd(file_name, cmd, values)
+    return {
+        "status":"ok",
+        "message":"report rejected"
+    }
 
 
 
