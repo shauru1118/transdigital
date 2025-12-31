@@ -73,7 +73,7 @@ def update_user(company:str):
     else:
         note = "-"
     if not name or not password or not post or not account or not vk or not disciplinary_actions or not note:
-        return jsonify({"status":"error", "message":"name or password is empty"})
+        return jsonify({"status":"error", "message":"some fields are empty"})
     if database.get_db_path(company) == "":
         return jsonify({"status":"error", "message":"company does not exist"})
     return jsonify(database.update_user(database.get_db_path(company), name, password, post, account, vk, disciplinary_actions, note))
