@@ -12,6 +12,14 @@ app.config["JSON_AS_ASCII"] = False
 app.config["JSON_SORT_KEYS"] = False
 
 
+
+# * root
+
+@app.route("/", methods=["GET"])
+def index():
+    return render_template("index.html")
+
+
 #* companys
 
 @app.route("/api/add_company", methods=["POST"])
