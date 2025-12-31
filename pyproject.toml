@@ -1,0 +1,14 @@
+[project]
+name = "transdigital"
+version = "0.1.0"
+description = "API for MTA Province ChATP"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "flask",
+    "flask_cors",
+]
+
+[project.scripts]
+app = "app:app"
+
