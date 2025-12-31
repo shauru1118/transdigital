@@ -255,9 +255,3 @@ def reject_report(company:str):
         return jsonify({"status":"error", "message":"company does not exist"})
     return jsonify(database.reject_report(database.get_db_path(company), id))
 
-
-
-
-
-if __name__ == "__main__":
-    app.run("0.0.0.0", 5000, debug=True)
