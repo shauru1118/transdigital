@@ -60,20 +60,14 @@ def delete_company():
 
 @app.route("/api/add_user/<string:company>", methods=["POST"])
 def add_user(company:str):
-    data = request.get_json()
-    name = data["name"]
-    password = data["password"]
-    post = data["post"]
-    account = data["account"]
-    vk = data["vk"]
-    if "disciplinary_actions" in data:
-        disciplinary_actions = data["disciplinary_actions"]
-    else:
-        disciplinary_actions = "0"
-    if "note" in data:
-        note = data["note"]
-    else:
-        note = "-"
+    data:dict = request.get_json()
+    name = data.get("name", "")
+    password = data.get("password", "")
+    post = data.get("post", "")
+    account = data.get("account", "")
+    vk = data.get("vk", "")
+    disciplinary_actions = data.get("disciplinary_actions", "0")
+    note = data.get("note", "")
     if not name or not password or not post or not account or not vk or not disciplinary_actions or not note:
         return jsonify({"status":"error", "message":"some fields are empty"})
     if database.get_db_path(company) == "":
@@ -82,58 +76,50 @@ def add_user(company:str):
 
 @app.route("/api/update_user/<string:company>", methods=["POST"])
 def update_user(company:str):
-    data = request.get_json()
-    name = data["name"]
-    password = data["password"]
-    post = data["post"]
-    account = data["account"]
-    vk = data["vk"]
-    disciplinary_actions = data["disciplinary_actions"]
-    if "note" in data:
-        note = data["note"]
-    else:
-        note = "-"
-    if not name or not password or not post or not account or not vk or not disciplinary_actions or not note:
+    data:dict = request.get_json()
+    id = data.get("id", "")
+    name = data.get("name", "")
+    password = data.get("password", "")
+    post = data.get("post", "")
+    account = data.get("account", "")
+    vk = data.get("vk", "")
+    disciplinary_actions = data.get("disciplinary_actions", "0")
+    note = data.get("note", "")
+    if not id or not name or not password or not post or not account or not vk or not disciplinary_actions :
         return jsonify({"status":"error", "message":"some fields are empty"})
     if database.get_db_path(company) == "":
         return jsonify({"status":"error", "message":"company does not exist"})
-    return jsonify(database.update_user(database.get_db_path(company), name, password, post, account, vk, disciplinary_actions, note))
+    return jsonify(database.update_user(database.get_db_path(company), id, name, password, post, account, vk, disciplinary_actions, note))
 
 @app.route("/api/delete_user/<string:company>", methods=["POST"])
 def delete_user(company:str):
     data = request.get_json()
-    name = data["name"]
-    if not name:
+    id = data.get("id", "")
+    if not id:
         return jsonify({"status":"error", "message":"name is empty"})
     if database.get_db_path(company) == "":
         return jsonify({"status":"error", "message":"company does not exist"})
-    return jsonify(database.delete_user(database.get_db_path(company), name))
+    return jsonify(database.delete_user(database.get_db_path(company), id))
 
 @app.route("/api/get_user/<string:company>", methods=["POST"])
 def get_user(company:str):
     data = request.get_json()
-    name = data["name"]
-    if not name:
-        return jsonify({"status":"error", "message":"name is empty"})
+    name = data.get("name", "")
+    id = data.get("id", "")
+    if not name and not id:
+        return jsonify({"status":"error", "message":"name and id is empty"})
     if database.get_db_path(company) == "":
         return jsonify({"status":"error", "message":"company does not exist"})
-    return jsonify(database.get_user(database.get_db_path(company), name))
+    if id:
+        return jsonify(database.get_user(database.get_db_path(company), id=id))
+    if name:
+        return jsonify(database.get_user(database.get_db_path(company), name=name))
 
-@app.route("/api/get_user_info/<string:company>", methods=["POST"])
-def get_user_info(company:str):
-    data = request.get_json()
-    name = data["name"]
-    if not name:
-        return jsonify({"status":"error", "message":"name is empty"})
+@app.route("/api/get_users/<string:company>", methods=["GET"])
+def get_users(company:str):
     if database.get_db_path(company) == "":
         return jsonify({"status":"error", "message":"company does not exist"})
-    return jsonify(database.get_user_info(database.get_db_path(company), name))
-
-@app.route("/api/get_users_info/<string:company>", methods=["GET"])
-def get_users_info(company:str):
-    if database.get_db_path(company) == "":
-        return jsonify({"status":"error", "message":"company does not exist"})
-    return jsonify(database.get_users_info(database.get_db_path(company)))
+    return jsonify(database.get_users(database.get_db_path(company)))
 
 
 #* vehicles
