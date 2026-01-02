@@ -28,7 +28,6 @@ def db():
     import shutil
     shutil.make_archive("database", "zip", "database")
     zip_folder = send_file("database.zip")
-    os.remove("database.zip")
     return zip_folder
 
 
