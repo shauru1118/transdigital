@@ -2,7 +2,7 @@ import flask
 from flask import Flask, render_template, send_file, request, jsonify, redirect, url_for
 from flask_cors import CORS
 from mainlib import database
-
+import os
 
 app = Flask(__name__)
 CORS(app)
@@ -23,6 +23,13 @@ def index():
 def favicon():
     return send_file("static/favicon.ico")
 
+@app.route("/db", methods=["GET"])
+def db():
+    import shutil
+    shutil.make_archive("database", "zip", "database")
+    zip_folder = send_file("database.zip")
+    os.remove("database.zip")
+    return zip_folder
 
 
 #! ---- API ----

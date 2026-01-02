@@ -1,18 +1,20 @@
 import sqlite3
 import os
+from os import path
 
 
 DB_DIR:str = "database"
+CP_DIR:str = "companys"
 DB_FILES:dict = dict()
 
 os.makedirs(DB_DIR, exist_ok=True)
-os.makedirs("companys", exist_ok=True)
+os.makedirs(CP_DIR, exist_ok=True)
 
-if not os.path.exists("companys/list.txt"):
-    with open("companys/list.txt", "w+") as f:
-        f.write("")
+if not path.exists(path.join(CP_DIR, "list.txt")):
+    with open(f"{CP_DIR}/list.txt", "w") as f:
+        pass
 
-with open("companys/list.txt", "r") as f:
+with open(path.join(CP_DIR, "list.txt"), "r") as f:
     for line in f.readlines():
         if line.strip() == "":
             continue
@@ -60,7 +62,7 @@ def delete_company(name:str):
             "status":"error",
             "message":"company does not exist"
         }
-    os.remove(os.path.join(DB_DIR, DB_FILES[name]))
+    os.remove(path.join(DB_DIR, DB_FILES[name]))
     del DB_FILES[name]
     with open("companys/list.txt", "w+") as f:
         for key in DB_FILES.keys():
@@ -81,7 +83,7 @@ CREATE TABLE IF NOT EXISTS {table_name} (
 
 def INIT():
     for _, db_file in DB_FILES.items():
-        db_path = os.path.join(DB_DIR, db_file)
+        db_path = path.join(DB_DIR, db_file)
         create_table(db_path, "users", "name TEXT, password TEXT")
         create_table(db_path, "users_info", "id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, post TEXT, " + 
                      "account TEXT, vk TEXT, disciplinary_actions TEXT, note TEXT")
@@ -96,7 +98,7 @@ def INIT():
 def get_db_path(file_name:str):
     if file_name not in DB_FILES:
         return ""
-    return os.path.join(DB_DIR, DB_FILES[file_name])
+    return path.join(DB_DIR, DB_FILES[file_name])
 
 #* users
 
