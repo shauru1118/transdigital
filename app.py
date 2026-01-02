@@ -1,5 +1,5 @@
 import flask
-from flask import Flask, render_template, request, jsonify, redirect, url_for
+from flask import Flask, render_template, send_file, request, jsonify, redirect, url_for
 from flask_cors import CORS
 from mainlib import database
 
@@ -13,13 +13,20 @@ app.config["JSON_SORT_KEYS"] = False
 
 
 
-# * root
+#! ---- WEB ----
 
 @app.route("/", methods=["GET"])
 def index():
     return render_template("index.html")
 
+@app.route("/favicon.ico", methods=["GET"])
+def favicon():
+    return send_file("static/favicon.ico")
 
+
+
+#! ---- API ----
+ 
 #* companys
 
 @app.route("/api/add_company", methods=["POST"])
