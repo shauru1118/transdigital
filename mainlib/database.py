@@ -459,5 +459,5 @@ def rebuild():
 if __name__ == "__main__":
     ans = get_users(get_db_path("rotor"))
     print(ans)
-    print(*ans.get("users", ["NO USERS"]))
+    print(*ans.get("users", ["NO USERS"]), sep="\n")
 
