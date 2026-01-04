@@ -267,6 +267,19 @@ def dashboard(username:str):
         return jsonify({"status":"error", "message":"company does not exist"})
     user_dict = database.get_user(database.get_db_path(company), name=username)
     if user_dict["status"] == "error":
-        return jsonify({"status":"error", "message":"user does not exist"})
+        return jsonify(user_dict)
     user = User(user_dict["id"], user_dict["name"], user_dict["password"], user_dict["post"], user_dict["account"], user_dict["vk"], user_dict["disciplinary_actions"], user_dict["note"])
-    return render_template("dashboard.html", company=company, user=user, url=request.url)
+    return render_template("dashboard.html", company=company.capitalize(), user=user, url=request.url)
+
+@app.route("/users", methods=["GET"])
+def users():
+    company = request.host.split(".")[0]
+    if database.get_db_path(company) == "":
+        return jsonify({"status":"error", "message":"company does not exist"})
+    users = []
+    users_dict = database.get_users(database.get_db_path(company))
+    if users_dict["status"] == "error":
+        return jsonify(users_dict)
+    for user in users_dict["users"]:
+        users.append(User(user["id"], user["name"], "secure", user["post"], user["account"], user["vk"], user["disciplinary_actions"], user["note"]))
+    return render_template("users.html", company=company.capitalize(), users=users, url=request.url)
