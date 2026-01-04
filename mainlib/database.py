@@ -84,9 +84,8 @@ CREATE TABLE IF NOT EXISTS {table_name} (
 def INIT():
     for _, db_file in DB_FILES.items():
         db_path = path.join(DB_DIR, db_file)
-        create_table(db_path, "users", "name TEXT, password TEXT")
-        create_table(db_path, "users_info", "id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, post TEXT, " + 
-                     "account TEXT, vk TEXT, disciplinary_actions TEXT, note TEXT")
+        create_table(db_path, "users", "id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, " \
+        "password TEXT, post TEXT, account TEXT, vk TEXT, disciplinary_actions TEXT, note TEXT")
         create_table(db_path, "vehicles", 
         "number INTEGER PRIMARY KEY AUTOINCREMENT, board_number TEXT, state_number TEXT, model TEXT, built TEXT, since TEXT, note TEXT, state TEXT, owner TEXT")
         create_table(db_path, "routes", "id INTEGER PRIMARY KEY AUTOINCREMENT, route TEXT")

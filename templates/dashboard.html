@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TransDigital</title>
+    <link rel="stylesheet" href="{{url_for('static', filename='main.css')}}">
+</head>
+<body>
+    <main>
+
+        <p>{{ url }}</p>
+
+        <div class="name">
+            <h1 style="margin: 0;">{{ user.name }}</h1>
+            <p style="margin: 0 0 2em 0;">worker</p>
+            <h1 style="margin: 0;">{{ company }}</h1>
+            <p style="margin: 0;">company</p>
+        </div>
+
+        <div class="worker">
+            <p id="id">id: <b>{{ user.id }}</b></p>
+            <p id="name">name: <b>{{ user.name }}</b></p>
+            <p id="password">password: <b>{{ user.password }}</b></p>
+            <p id="post">post: <b>{{ user.post }}</b></p>
+            <p id="account">account: <b>{{ user.account }}</b></p>
+            <p id="vk">vk: <b>{{ user.vk }}</b></p>
+            <p id="disciplinary_actions">disciplinary_actions: <b>{{ user.disciplinary_actions }}</b></p>
+            <p id="note">note: <b>{{ user.note }}</b></p>
+        </div>
+
+    </main>
+</body>
+</html>

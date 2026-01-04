@@ -254,3 +254,19 @@ def reject_report(company:str):
         return jsonify({"status":"error", "message":"company does not exist"})
     return jsonify(database.reject_report(database.get_db_path(company), id))
 
+
+
+#! HTML previews
+
+from mainlib.User import User
+
+@app.route("/dashboard/<username>", methods=["GET"])
+def dashboard(username:str):
+    company = request.host.split(".")[0]
+    if database.get_db_path(company) == "":
+        return jsonify({"status":"error", "message":"company does not exist"})
+    user_dict = database.get_user(database.get_db_path(company), name=username)
+    if not user_dict:
+        return jsonify({"status":"error", "message":"user does not exist"})
+    user = User(user_dict["id"], user_dict["name"], user_dict["password"], user_dict["post"], user_dict["account"], user_dict["vk"], user_dict["disciplinary_actions"], user_dict["note"])
+    return render_template("dashboard.html", company=company, user=user, url=request.url)
