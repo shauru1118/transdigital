@@ -86,7 +86,7 @@ def INIT():
         db_path = path.join(DB_DIR, db_file)
         create_table(db_path, "users", "id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, " \
         "password TEXT, post TEXT, account TEXT, vk TEXT, disciplinary_actions TEXT, note TEXT")
-        create_table(db_path, "vehicles", 
+        create_table(db_path, "vehicles",
         "number INTEGER PRIMARY KEY AUTOINCREMENT, board_number TEXT, state_number TEXT, model TEXT, built TEXT, since TEXT, note TEXT, state TEXT, owner TEXT")
         create_table(db_path, "routes", "id INTEGER PRIMARY KEY AUTOINCREMENT, route TEXT")
         create_table(db_path, "reports", "id INTEGER PRIMARY KEY AUTOINCREMENT, " \
@@ -112,7 +112,7 @@ def get_user(file_name:str, name:str|None=None, id:str|None=None):
                 "message":"user does not exist"
             }
         user = ans[0]
-    if id:
+    elif id:
         cmd = f"SELECT * FROM users WHERE id = ?"
         values = (id,)
         ans = do_cmd(file_name, cmd, values)
@@ -122,6 +122,8 @@ def get_user(file_name:str, name:str|None=None, id:str|None=None):
                 "message":"user does not exist"
             }
         user = ans[0]
+    else:
+        user = ("", "", "", "", "", "", "","")
     return {
         "status":"ok",
         "id":str(user[0]),
@@ -149,17 +151,14 @@ def add_user(file_name:str, name:str, password:str, post:str, account:str, vk:st
         "message":"user added"
     }
 
-def get_users(file_name:str):
+def get_users(file_name:str) -> list:
     cmd = f"SELECT * FROM users"
     ans = do_cmd(file_name, cmd)
     if len(ans) == 0:
-        return {
-            "status":"error",
-            "message":"no users found"
-        }
-    users = []
+        return []
+    users:list[dict[str,str]] = []
     for user in ans:
-        users.append({
+        user_properties:dict[str,str] = {
             "id":str(user[0]),
             "name":str(user[1]),
             # "password":str(user[2]),
@@ -168,11 +167,9 @@ def get_users(file_name:str):
             "vk":str(user[5]),
             "disciplinary_actions":str(user[6]),
             "note":str(user[7])
-        })
-    return {
-        "status":"ok",
-        "users":users
-    }
+        }
+        users.append(user_properties)
+    return users
 
 def delete_user(file_name:str, id:str):
     if len(get_user(file_name, id=id)) == 0:
@@ -459,4 +456,3 @@ if __name__ == "__main__":
     ans = get_users(get_db_path("rotor"))
     print(ans)
     print(*ans.get("users", ["NO USERS"]), sep="\n")
-

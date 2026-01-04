@@ -1,4 +1,3 @@
-import flask
 from flask import Flask, render_template, send_file, request, jsonify, redirect, url_for
 from flask_cors import CORS
 from mainlib import database
@@ -32,7 +31,7 @@ def db():
 
 
 #! ---- API ----
- 
+
 #* companys
 
 @app.route("/api/add_company", methods=["POST"])
@@ -119,7 +118,16 @@ def get_user(company:str):
 def get_users(company:str):
     if database.get_db_path(company) == "":
         return jsonify({"status":"error", "message":"company does not exist"})
-    return jsonify(database.get_users(database.get_db_path(company)))
+    users = database.get_users(database.get_db_path(company))
+    if len(users) == 0:
+        return jsonify({
+            "status":"error",
+            "message":"no users found"
+        })
+    return jsonify({
+        "status":"ok",
+        "users":users
+    })
 
 
 #* vehicles
@@ -201,7 +209,7 @@ def delete_route(company:str):
     return jsonify(database.delete_route(database.get_db_path(company), route))
 
 
-#* reports 
+#* reports
 
 @app.route("/api/get_reports/<string:company>", methods=["GET"])
 def get_reports(company:str):
@@ -277,9 +285,13 @@ def users():
     if database.get_db_path(company) == "":
         return jsonify({"status":"error", "message":"company does not exist"})
     users = []
-    users_dict = database.get_users(database.get_db_path(company))
-    if users_dict["status"] == "error":
-        return jsonify(users_dict)
-    for user in users_dict["users"]:
-        users.append(User(user["id"], user["name"], "secure", user["post"], user["account"], user["vk"], user["disciplinary_actions"], user["note"]))
+    ans_users = database.get_users(database.get_db_path(company))
+    if len(ans_users) == 0:
+        return jsonify({
+            "status":"error",
+            "message":"no users found",
+        })
+    for user in ans_users:
+        users.append(User(id=user["id"], name=user["name"], password="secure", post=user["post"], account=user["account"], vk=user["vk"],
+            disciplinary_actions=user["disciplinary_actions"], note=user["note"]))
     return render_template("users.html", company=company.capitalize(), users=users, url=request.url)
