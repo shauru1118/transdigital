@@ -4,7 +4,6 @@ from mainlib import database
 import os
 
 app = Flask(__name__)
-app.config['JSON_AS_ASCII'] = False
 CORS(app)
 database.INIT()
 
@@ -76,19 +75,24 @@ def add_user(company:str):
 
 @app.route("/api/update_user/<string:company>", methods=["POST"])
 def update_user(company:str):
-    data:dict = request.get_json()
-    id = data.get("id", "")
-    name = data.get("name", "")
-    password = data.get("password", "")
-    post = data.get("post", "")
-    account = data.get("account", "")
-    vk = data.get("vk", "")
-    disciplinary_actions = data.get("disciplinary_actions", "0")
-    note = data.get("note", "")
-    if not id or not name or not password or not post or not account or not vk or not disciplinary_actions :
-        return jsonify({"status":"error", "message":"some fields are empty"})
     if database.get_db_path(company) == "":
         return jsonify({"status":"error", "message":"company does not exist"})
+
+    data:dict = request.get_json()
+    id = data.get("id", "")
+
+    if not id:
+        return jsonify({"status":"error", "message":"id is empty"})
+
+    user = database.get_user(database.get_db_path("rotor"), id=id)
+    name = data.get("name",         user.get("name"))
+    password = data.get("password", user.get("password"))
+    post = data.get("post",         user.get("post"))
+    account = data.get("account",   user.get("account"))
+    vk = data.get("vk",             user.get("vk"))
+    disciplinary_actions = data.get("disciplinary_actions", user.get("disciplinary_actions"))
+    note = data.get("note",         user.get("note"))
+
     return jsonify(database.update_user(database.get_db_path(company), id, name, password, post, account, vk, disciplinary_actions, note))
 
 @app.route("/api/delete_user/<string:company>", methods=["POST"])
