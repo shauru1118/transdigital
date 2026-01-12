@@ -194,7 +194,7 @@ def update_user(file_name:str, id:str, name:str, password:str, post:str, account
             "message":"user does not exist"
         }
     cmd = f"UPDATE users SET name = ?, password = ?, post = ?, account = ?, vk = ?, disciplinary_actions = ?, note = ? WHERE id = ?"
-    values = (name, password, post, account, vk, disciplinary_actions, note)
+    values = (name, password, post, account, vk, disciplinary_actions, note, id)
     do_cmd(file_name, cmd, values)
     return {
         "status":"ok",
