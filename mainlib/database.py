@@ -88,9 +88,10 @@ def INIT():
         "password TEXT, post TEXT, account TEXT, vk TEXT, disciplinary_actions TEXT, note TEXT")
         create_table(db_path, "vehicles",
         "number INTEGER PRIMARY KEY AUTOINCREMENT, board_number TEXT, state_number TEXT, model TEXT, built TEXT, since TEXT, note TEXT, state TEXT, owner TEXT")
-        create_table(db_path, "routes", "id INTEGER PRIMARY KEY AUTOINCREMENT, route TEXT")
+        create_table(db_path, "routes", "id INTEGER PRIMARY KEY AUTOINCREMENT, route TEXT, salary TEXT")
         create_table(db_path, "reports", "id INTEGER PRIMARY KEY AUTOINCREMENT, " \
         "user_name TEXT, date TEXT, route TEXT, num_round_trips TEXT, num_passengers TEXT, proof TEXT, status TEXT")
+        create_table(db_file, "coefs", "id INTEGER PRIMARY KEY AUTOINCREMENT, post TEXT, coef TEXT")
 
 #* db
 
@@ -193,7 +194,7 @@ def update_user(file_name:str, id:str, name:str, password:str, post:str, account
             "message":"user does not exist"
         }
     cmd = f"UPDATE users SET name = ?, password = ?, post = ?, account = ?, vk = ?, disciplinary_actions = ?, note = ? WHERE id = ?"
-    values = (password, name)
+    values = (name, password, post, account, vk, disciplinary_actions, note)
     do_cmd(file_name, cmd, values)
     return {
         "status":"ok",
@@ -321,38 +322,49 @@ def get_routes(file_name:str):
             "status":"error",
             "message":"no routes found"
         }
-    routes = []
+    routes:list[dict] = []
     for route in ans:
-        routes.append(str(route[1]))
+        if not route:
+            continue
+        routes.append({
+            "id":route[0],
+            "route":route[1],
+            "salary":route[2],
+        })
     return {
         "status":"ok",
         "routes":routes
     }
 
-def add_route(file_name:str, route:str):
+def add_route(file_name:str, route:str, salary:str):
     ans = get_routes(file_name)
     if ans["status"] != "error" and route in ans["routes"]:
         return {
             "status":"error",
             "message":"route already exists"
         }
-    cmd = "INSERT INTO routes (route) VALUES (?)"
-    values = (route,)
+    cmd = "INSERT INTO routes (route, salary) VALUES (?, ?)"
+    values = (route, salary)
     do_cmd(file_name, cmd, values)
     return {
         "status":"ok",
         "message":"route added"
     }
 
-def delete_route(file_name:str, route:str):
+def delete_route(file_name:str, id:str):
     ans = get_routes(file_name)
-    if route not in ans["routes"]:
+    if ans["status"] == "error":
+        return ans
+    for route in ans["routes"]:
+        if route["id"] == id:
+            break
+    else:
         return {
             "status":"error",
             "message":"route does not exist"
         }
-    cmd = f"DELETE FROM routes WHERE route = ?"
-    values = (route,)
+    cmd = f"DELETE FROM routes WHERE id = ?"
+    values = (id,)
     do_cmd(file_name, cmd, values)
     return {
         "status":"ok",
@@ -406,9 +418,13 @@ def delete_report(file_name:str, id:str):
     }
 
 def verify_report(file_name:str, id:str):
+    # verefy report
     cmd = f"UPDATE reports SET status = ? WHERE id = ?"
     values = ("verified", id)
     do_cmd(file_name, cmd, values)
+
+    # TODO: count salary 
+
     return {
         "status":"ok",
         "message":"report verified"
@@ -424,35 +440,30 @@ def reject_report(file_name:str, id:str):
     }
 
 
+#* coefs
 
-def rebuild():
-    DB = "rotor.db"
-    import sqlite3
+def get_coefs(file_name:str):
+    cmd = f"SELECT * FROM coefs"
+    values = tuple()
+    ans = do_cmd(file_name, cmd, values)
+    if len(ans) == 0:
+        return {
+            "status":"error",
+            "message":"no coefs found"
+        }
+    coefs = []
+    for coef in ans:
+        coefs.append({
+            "id":coef[0],
+            "post":coef[1],
+            "coef":coef[2],
+        })
+    return {
+        "status":"ok",
+        "coefs":coefs
+    }
 
-    con = sqlite3.connect(DB)
-    cur = con.cursor()
-
-    cur.execute("SELECT * FROM users_info")
-    users = cur.fetchall()
-
-    cur.execute("SELECT password FROM users")
-    passes = cur.fetchall()
-
-
-    cur.execute("DROP TABLE users_info")
-    cur.execute("DROP TABLE users")
-
-
-    cur.execute("CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, password TEXT, post TEXT, account TEXT, vk TEXT, disciplinary_actions TEXT, note TEXT)")
-
-    for i in range(len(users)):
-        cur.execute("INSERT INTO users (name, password, post, account, vk, disciplinary_actions, note) VALUES (?, ?, ?, ?, ?, ?, ?)", (users[i][1], passes[i][0], *users[i][2:]))
-
-    con.commit()
-    con.close()
-
+# def add_coef
 
 if __name__ == "__main__":
-    ans = get_users(get_db_path("rotor"))
-    print(ans)
-    print(*ans.get("users", ["NO USERS"]), sep="\n")
+    INIT()
