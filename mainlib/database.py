@@ -154,7 +154,8 @@ def set_config(file_name:str, key:str, value:str):
     return
 
 def add_config(file_name:str, key:str, value:str):
-
+    if get_config(file_name, key) != "":
+        return
     cmd = f"INSERT INTO config (key, value) VALUES (?, ?)"
     values = (key, value)
     do_cmd(file_name, cmd, values)
@@ -705,4 +706,8 @@ if __name__ == "__main__":
     INIT()
     cmd = "DROP TABLE IF EXISTS users_info "
     do_cmd(get_db_path("rotor"), cmd)
-    # print(os.getcwd())
+    cmd = "DROP TABLE IF EXISTS config "
+    do_cmd(get_db_path("rotor"), cmd)
+    cmd = "DROP TABLE IF EXISTS routes "
+    do_cmd(get_db_path("rotor"), cmd)
+    INIT()
