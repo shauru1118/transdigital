@@ -704,10 +704,3 @@ def update_coef(file_name:str, id:str, post:str, coef:str):
 
 if __name__ == "__main__":
     INIT()
-    cmd = "DROP TABLE IF EXISTS users_info "
-    do_cmd(get_db_path("rotor"), cmd)
-    cmd = "DROP TABLE IF EXISTS config "
-    do_cmd(get_db_path("rotor"), cmd)
-    cmd = "DROP TABLE IF EXISTS routes "
-    do_cmd(get_db_path("rotor"), cmd)
-    INIT()
