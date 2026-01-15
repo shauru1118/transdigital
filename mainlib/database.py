@@ -3,15 +3,17 @@ import os
 from os import path
 
 
-DB_DIR:str = "database"
-CP_DIR:str = "companys"
-DB_FILES:dict = dict()
+DB_DIR:str = path.join(".", "database")
+CP_DIR:str = path.join(".", "companys")
+db_files:dict = dict()
+
+PASSANGER_COST = 2000
 
 os.makedirs(DB_DIR, exist_ok=True)
 os.makedirs(CP_DIR, exist_ok=True)
 
 if not path.exists(path.join(CP_DIR, "list.txt")):
-    with open(f"{CP_DIR}/list.txt", "w") as f:
+    with open(path.exists(path.join(CP_DIR, "list.txt")), "a") as f:
         pass
 
 with open(path.join(CP_DIR, "list.txt"), "r") as f:
@@ -20,10 +22,10 @@ with open(path.join(CP_DIR, "list.txt"), "r") as f:
             continue
         if len(line.split()) != 2:
             name = line.strip()
-            DB_FILES[name] = f"{name}.db"
+            db_files[name] = f"{name}.db"
         else:
             name, db_file = line.strip().split(" ")
-            DB_FILES[name] = db_file
+            db_files[name] = db_file
 
 def do_cmd(file_name:str, cmd:str, values:tuple=tuple()):
     connection = sqlite3.connect(file_name)
@@ -36,7 +38,7 @@ def do_cmd(file_name:str, cmd:str, values:tuple=tuple()):
     return result
 
 def add_company(name:str):
-    if name in DB_FILES:
+    if name in db_files:
         return {
             "status":"error",
             "message":"company already exists"
@@ -47,7 +49,7 @@ def add_company(name:str):
             "message":"company name cannot contain spaces"
         }
     name = name.lower()
-    DB_FILES[name] = f"{name}.db"
+    db_files[name] = f"{name}.db"
     with open("companys/list.txt", "a") as f:
         f.write(f"{name}\n")
     INIT()
@@ -57,15 +59,15 @@ def add_company(name:str):
     }
 
 def delete_company(name:str):
-    if name not in DB_FILES:
+    if name not in db_files:
         return {
             "status":"error",
             "message":"company does not exist"
         }
-    os.remove(path.join(DB_DIR, DB_FILES[name]))
-    del DB_FILES[name]
+    os.remove(path.join(DB_DIR, db_files[name]))
+    del db_files[name]
     with open("companys/list.txt", "w+") as f:
-        for key in DB_FILES.keys():
+        for key in db_files.keys():
             f.write(f"{key}\n")
     return {
         "status":"ok",
@@ -82,23 +84,88 @@ CREATE TABLE IF NOT EXISTS {table_name} (
 
 
 def INIT():
-    for _, db_file in DB_FILES.items():
+    for _, db_file in db_files.items():
         db_path = path.join(DB_DIR, db_file)
-        create_table(db_path, "users", "id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, " \
-        "password TEXT, post TEXT, account TEXT, vk TEXT, disciplinary_actions TEXT, note TEXT")
-        create_table(db_path, "vehicles",
-        "number INTEGER PRIMARY KEY AUTOINCREMENT, board_number TEXT, state_number TEXT, model TEXT, built TEXT, since TEXT, note TEXT, state TEXT, owner TEXT")
-        create_table(db_path, "routes", "id INTEGER PRIMARY KEY AUTOINCREMENT, route TEXT, salary TEXT")
-        create_table(db_path, "reports", "id INTEGER PRIMARY KEY AUTOINCREMENT, " \
-        "user_name TEXT, date TEXT, route TEXT, num_round_trips TEXT, num_passengers TEXT, proof TEXT, status TEXT")
-        create_table(db_file, "coefs", "id INTEGER PRIMARY KEY AUTOINCREMENT, post TEXT, coef TEXT")
+
+        do_cmd(db_path, "CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, " \
+        "password TEXT, post TEXT, account TEXT, vk TEXT, disciplinary_actions TEXT, note TEXT)")
+
+        do_cmd(db_path, "CREATE TABLE IF NOT EXISTS statistic (id INTEGER PRIMARY KEY AUTOINCREMENT, user_name TEXT, " \
+        "total_salary TEXT, period_salary TEXT, total_round_trips TEXT, period_round_trips TEXT, total_passengers TEXT, period_passengers TEXT)")
+
+        do_cmd(db_path, "CREATE TABLE IF NOT EXISTS vehicles (number INTEGER PRIMARY KEY AUTOINCREMENT, board_number TEXT, " \
+        "state_number TEXT, model TEXT, built TEXT, since TEXT, note TEXT, state TEXT, owner TEXT)")
+
+        do_cmd(db_path, "CREATE TABLE IF NOT EXISTS routes (id INTEGER PRIMARY KEY AUTOINCREMENT, route TEXT, salary TEXT)")
+
+        do_cmd(db_path, "CREATE TABLE IF NOT EXISTS reports (id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+        "user_name TEXT, date TEXT, route TEXT, num_round_trips TEXT, num_passengers TEXT, proof TEXT, status TEXT)")
+
+        do_cmd(db_path, "CREATE TABLE IF NOT EXISTS coefs (id INTEGER PRIMARY KEY AUTOINCREMENT, post TEXT, coef TEXT)")
+
+        do_cmd(db_path, "CREATE TABLE IF NOT EXISTS config (id INTEGER PRIMARY KEY AUTOINCREMENT, key TEXT, value TEXT)")
+        add_config(db_path, "passanger_cost", str(PASSANGER_COST))
+
+        print(f"database {db_path} created")
+
 
 #* db
 
-def get_db_path(file_name:str):
-    if file_name not in DB_FILES:
+def get_db_path(company:str):
+    if company not in db_files:
         return ""
-    return path.join(DB_DIR, DB_FILES[file_name])
+    return path.join(DB_DIR, db_files[company])
+
+#* config
+
+def get_config(file_name:str, key:str):
+    cmd = f"SELECT value FROM config WHERE key = ?"
+    values = (key,)
+    ans = do_cmd(file_name, cmd, values)
+    if len(ans) == 0:
+        return ""
+    return ans[0][0]
+
+def get_configs(file_name:str):
+    cmd = f"SELECT * FROM config"
+    values = tuple()
+    ans = do_cmd(file_name, cmd, values)
+    if len(ans) == 0:
+        return {
+            "status":"error",
+            "message":"no configs found"
+        }
+    configs = []
+    for config in ans:
+        configs.append({
+            "id":config[0],
+            "key":config[1],
+            "value":config[2],
+        })
+    return {
+        "status":"ok",
+        "configs":configs
+    }
+
+def set_config(file_name:str, key:str, value:str):
+    cmd = f"UPDATE config SET value = ? WHERE key = ?"
+    values = (value, key)
+    do_cmd(file_name, cmd, values)
+    return
+
+def add_config(file_name:str, key:str, value:str):
+
+    cmd = f"INSERT INTO config (key, value) VALUES (?, ?)"
+    values = (key, value)
+    do_cmd(file_name, cmd, values)
+    return
+
+def delete_config(file_name:str, key:str):
+    cmd = f"DELETE FROM config WHERE key = ?"
+    values = (key,)
+    do_cmd(file_name, cmd, values)
+    return
+
 
 #* users
 
@@ -201,6 +268,69 @@ def update_user(file_name:str, id:str, name:str, password:str, post:str, account
         "message":"user updated"
     }
 
+
+#* statistics
+
+def get_statistics(file_name:str):
+    cmd = f"SELECT * FROM statistics"
+    ans = do_cmd(file_name, cmd)
+    if len(ans) == 0:
+        return {
+            "status":"error",
+            "message":"users statistics does not exist"
+        }
+    statistics = []
+    for stat in ans:
+        statistics.append({
+            "id":str(stat[0]),
+            "user_name":str(stat[1]),
+            "total_salary":str(stat[2]),
+            "piriod_salary":str(stat[3]),
+            "total_round_trips":str(stat[4]),
+            "piriod_round_trips":str(stat[5]),
+            "total_passengers":str(stat[6]),
+            "piriod_passengers":str(stat[7])
+        })
+    return {
+        "status":"ok",
+        "statistics":statistics
+    }
+
+def get_user_statistics(file_name:str, user_name:str):
+    ans = get_statistics(file_name)
+    if ans["status"] == "error":
+        return ans
+    for stat in ans["statistics"]:
+        if stat["user_name"] == user_name:
+            return stat
+    cmd = f"INSERT INTO statistics (user_name, total_salary, piriod_salary, total_round_trips, piriod_round_trips, total_passengers, piriod_passengers) VALUES (?, ?, ?, ?, ?, ?, ?)"
+    values = (user_name, 0, 0, 0, 0, 0, 0)
+    do_cmd(file_name, cmd, values)
+    return get_user_statistics(file_name, user_name)
+
+def update_statistics(file_name:str, id:str, user_name:str, total_salary:str, piriod_salary:str, total_round_trips:str, piriod_round_trips:str, total_passengers:str, piriod_passengers:str):
+    ans = get_statistics(file_name)
+    if ans["status"] == "error":
+        return ans
+    for stat in ans["statistics"]:
+        if stat["id"] == id:
+            break
+    else:
+        cmd = f"INSERT INTO statistics (user_name, total_salary, piriod_salary, total_round_trips, piriod_round_trips, total_passengers, piriod_passengers) VALUES (?, ?, ?, ?, ?, ?, ?)"
+        values = (user_name, total_salary, piriod_salary, total_round_trips, piriod_round_trips, total_passengers, piriod_passengers)
+        do_cmd(file_name, cmd, values)
+        return {
+            "status":"ok",
+            "message":"statistics added"
+        }
+
+    cmd = f"UPDATE statistics SET user_name = ?, total_salary = ?, piriod_salary = ?, total_round_trips = ?, piriod_round_trips = ?, total_passengers = ?, piriod_passengers = ? WHERE id = ?"
+    values = (user_name, total_salary, piriod_salary, total_round_trips, piriod_round_trips, total_passengers, piriod_passengers, id)
+    do_cmd(file_name, cmd, values)
+    return {
+        "status":"ok",
+        "message":"statistics updated"
+    }
 
 #* vehicles
 
@@ -371,6 +501,20 @@ def delete_route(file_name:str, id:str):
         "message":"route deleted"
     }
 
+def get_route_salary(file_name:str, route:str):
+    cmd = f"SELECT salary FROM routes WHERE route = ?"
+    values = (route,)
+    ans = do_cmd(file_name, cmd, values)
+    if len(ans) == 0:
+        return {
+            "status":"error",
+            "message":"no route found"
+        }
+    return {
+        "status":"ok",
+        "salary":str(ans[0][0])
+    }
+
 
 #* reports
 
@@ -418,13 +562,65 @@ def delete_report(file_name:str, id:str):
     }
 
 def verify_report(file_name:str, id:str):
+
+    reportes = get_reports()
+    if reportes["status"] == "error":
+        return reportes
+    report:dict
+    for report_ in reportes["reports"]:
+        if report_["id"] == id:
+            report = report_
+            break
+    else:
+        return {
+            "status":"error",
+            "message":"no report found"
+        }
+
+
+    routes = get_routes(file_name)
+    if routes["status"] == "error":
+        return routes
+    route:dict
+    for route_ in routes["routes"]:
+        if route_["route"] == report["route"]:
+            route = route_
+            break
+    else:
+        return {
+            "status":"error",
+            "message":"no route found"
+        }
+    
+    user = get_user(file_name, name=report["user_name"])
+    if user["status"] == "error":
+        return user
+    
+
+    salary = float(report["num_round_trips"]) * float(route["salary"]) + float(report["num_passengers"]) * float(get_config(file_name, "passanger_cost")) 
+    salary *= float(get_coef(file_name, user["post"]))
+
+    
+    user_statistics = get_user_statistics(file_name, user["name"])
+    if user_statistics["status"] == "error":
+        return user_statistics
+    
+    user_statistics["total_salary"] = str(float(user_statistics["total_salary"]) + salary)
+    user_statistics["total_round_trips"] = str(float(user_statistics["total_round_trips"]) + float(report["num_round_trips"]))
+    user_statistics["total_passengers"] = str(float(user_statistics["total_passengers"]) + float(report["num_passengers"]))
+
+    user_statistics["piriod_salary"] = str(float(user_statistics["piriod_salary"]) + salary)
+    user_statistics["piriod_round_trips"] = str(float(user_statistics["piriod_round_trips"]) + float(report["num_round_trips"]))
+    user_statistics["piriod_passengers"] = str(float(user_statistics["piriod_passengers"]) + float(report["num_passengers"]))
+
+    update_statistics(file_name, user_statistics["id"], user_statistics["user_name"], user_statistics["total_salary"], 
+                      user_statistics["piriod_salary"], user_statistics["total_round_trips"], user_statistics["piriod_round_trips"], 
+                      user_statistics["total_passengers"], user_statistics["piriod_passengers"])
+    
     # verefy report
     cmd = f"UPDATE reports SET status = ? WHERE id = ?"
     values = ("verified", id)
     do_cmd(file_name, cmd, values)
-
-    # TODO: count salary 
-
     return {
         "status":"ok",
         "message":"report verified"
@@ -463,7 +659,50 @@ def get_coefs(file_name:str):
         "coefs":coefs
     }
 
-# def add_coef
+def get_coef(file_name:str, post:str):
+    cmd = f"SELECT * FROM coefs WHERE post = ?"
+    values = (post,)
+    ans = do_cmd(file_name, cmd, values)
+    if len(ans) == 0:
+        return {
+            "status":"error",
+            "message":"no coef found"
+        }
+    coef = ans[0]
+    return {
+        "status":"ok",
+        "coef":coef[2],
+    }
+
+def add_coef(file_name:str, post:str, coef:str):
+    cmd = "INSERT INTO coefs (post, coef) VALUES (?, ?)"
+    values = (post, coef)
+    do_cmd(file_name, cmd, values)
+    return {
+        "status":"ok",
+        "message":"coef added"
+    }
+
+def delete_coef(file_name:str, id:str):
+    cmd = f"DELETE FROM coefs WHERE id = ?"
+    values = (id,)
+    do_cmd(file_name, cmd, values)
+    return {
+        "status":"ok",
+        "message":"coef deleted"
+    }
+
+def update_coef(file_name:str, id:str, post:str, coef:str):
+    cmd = f"UPDATE coefs SET post = ?, coef = ? WHERE id = ?"
+    values = (post, coef, id)
+    do_cmd(file_name, cmd, values)
+    return {
+        "status":"ok",
+        "message":"coef updated"
+    }
 
 if __name__ == "__main__":
     INIT()
+    cmd = "DROP TABLE IF EXISTS users_info "
+    do_cmd(get_db_path("rotor"), cmd)
+    # print(os.getcwd())
