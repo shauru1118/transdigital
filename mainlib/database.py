@@ -200,13 +200,7 @@ def _init_database(db_path: str):
         # Добавляем стандартные конфигурации
         cursor.execute("INSERT OR IGNORE INTO config (key, value) VALUES (?, ?)", 
                       ("passanger_cost", str(PASSANGER_COST)))
-        
-        # Добавляем стандартные коэффициенты
-        default_coefs = [("водитель", 1.0), ("кондуктор", 0.8), ("администратор", 1.2)]
-        for post, coef in default_coefs:
-            cursor.execute("INSERT OR IGNORE INTO coefs (post, coef) VALUES (?, ?)", 
-                          (post, coef))
-    
+            
     print(f"Database initialized: {db_path}")
 
 # ========== UTILITY FUNCTIONS ==========
