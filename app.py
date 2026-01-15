@@ -4,7 +4,7 @@ from mainlib import database
 import os
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, supports_credentials=True)
 
 # Инициализируем все базы данных при запуске
 database.INIT()
