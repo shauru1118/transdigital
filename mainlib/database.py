@@ -261,7 +261,7 @@ def get_user(file_name: str, user_id: str = None, name: str = None) -> Dict[str,
     
     user = _row_to_dict(result[0])
     # Не возвращаем пароль в ответе
-    user.pop("password", None)
+    # user.pop("password", None)
     user["status"] = "ok"
     return user
 
@@ -325,6 +325,16 @@ def delete_user(file_name: str, user_id: str) -> Dict[str, str]:
     query = "DELETE FROM users WHERE id = ?"
     execute_command(file_name, query, (user_id,))
     return {"status": "ok", "message": "user deleted"}
+
+def login(file_name: str, name: str, password: str) -> Dict[str, str]:
+    """Проверяет логин и пароль"""
+    query = "SELECT * FROM users WHERE name = ? AND password = ?"
+    result = execute_query(file_name, query, (name, password))
+    
+    if not result:
+        return {"status": "error", "message": "invalid login or password"}
+    
+    return {"status": "ok", "message": "login successful"}
 
 # ========== STATISTICS FUNCTIONS ==========
 

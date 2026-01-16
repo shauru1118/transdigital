@@ -134,7 +134,10 @@ def get_user(company: str, user_id: str):
     if error:
         return error
     
-    return jsonify(database.get_user(db_path, user_id=user_id))
+    user = database.get_user(db_path, user_id=user_id)
+    user.pop("password", None)
+    
+    return jsonify(user)
 
 @app.route("/api/user/<string:company>/<string:user_id>", methods=["PUT"])
 def update_user(company: str, user_id: str):
@@ -162,6 +165,22 @@ def delete_user(company: str, user_id: str):
         return error
     
     return jsonify(database.delete_user(db_path, user_id))
+
+@app.route("/api/login/<string:company>", methods=["POST"])
+def login(company: str):
+    data = request.get_json()
+    name = data.get("name", "").strip()
+    password = data.get("password", "").strip()
+    
+    db_path, error = _get_db_path(company)
+
+    if not name:
+        return jsonify({"status": "error", "message": "name is empty"})
+    
+    if not password:
+        return jsonify({"status": "error", "message": "password is empty"})
+    
+    return jsonify(database.login(db_path, name, password))
 
 # ----- STATISTICS ENDPOINTS -----
 
@@ -524,6 +543,8 @@ def dashboard(username: str):
         return error[1]  # Возвращаем JSON ошибку
     
     user_dict = database.get_user(db_path, name=username)
+    user_dict.pop("password", None)
+
     if user_dict["status"] == "error":
         return jsonify(user_dict)
     
