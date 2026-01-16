@@ -151,6 +151,27 @@ PUT /api/user/{company_name}/{user_id}
 DELETE /api/user/{company_name}/{user_id}
 ```
 
+#### Логин пользователя
+```http
+POST /api/login/{company_name}
+```
+
+**Тело запроса:**
+```json
+{
+  "name": "Иван Иванов",
+  "password": "пароль123"
+}
+```
+
+**Ответ**
+```json
+{
+  "status": "error"/"ok", 
+  "message": "invalid login or password"/"login successful"
+}
+```
+
 ---
 
 ### Маршруты
