@@ -383,7 +383,8 @@ def add_report(company: str):
     
     required_fields = ["user_name", "date", "route", "num_round_trips", "num_passengers"]
     for field in required_fields:
-        if not data.get(field):
+        value = data.get(field)
+        if not value and value != 0:
             return jsonify({"status": "error", "message": f"{field} is required"})
     
     db_path, error = _get_db_path(company)
