@@ -417,6 +417,63 @@ def reset_period_statistics(file_name: str) -> Dict[str, str]:
     execute_command(file_name, query)
     return {"status": "ok", "message": "period statistics reset"}
 
+def update_user_statistics_direct(file_name: str, user_name: str, **kwargs) -> Dict[str, str]:
+    """Прямое обновление статистики пользователя по полям"""
+    # Проверяем существование пользователя
+    user_query = "SELECT name FROM users WHERE name = ?"
+    user_result = execute_query(file_name, user_query, (user_name,))
+    
+    if not user_result:
+        return {"status": "error", "message": "user does not exist"}
+    
+    # Получаем текущую статистику
+    stats_query = "SELECT * FROM statistics WHERE user_name = ?"
+    stats_result = execute_query(file_name, stats_query, (user_name,))
+    
+    # Если записи статистики нет, создаем ее
+    if not stats_result:
+        create_query = """INSERT INTO statistics 
+                         (user_name, total_salary, period_salary, 
+                          total_round_trips, period_round_trips, 
+                          total_passengers, period_passengers) 
+                         VALUES (?, 0, 0, 0, 0, 0, 0)"""
+        execute_command(file_name, create_query, (user_name,))
+    
+    # Подготавливаем поля для обновления
+    update_fields = []
+    params = []
+    
+    allowed_fields = {
+        'total_salary': 'total_salary',
+        'period_salary': 'period_salary',
+        'total_round_trips': 'total_round_trips',
+        'period_round_trips': 'period_round_trips',
+        'total_passengers': 'total_passengers',
+        'period_passengers': 'period_passengers'
+    }
+    
+    for key, value in kwargs.items():
+        if key in allowed_fields:
+            update_fields.append(f"{allowed_fields[key]} = ?")
+            params.append(value)
+    
+    if not update_fields:
+        return {"status": "error", "message": "no valid fields to update"}
+    
+    # Добавляем user_name в параметры для WHERE
+    params.append(user_name)
+    
+    # Строим и выполняем запрос
+    update_query = f"UPDATE statistics SET {', '.join(update_fields)} WHERE user_name = ?"
+    
+    try:
+        execute_command(file_name, update_query, tuple(params))
+        return {"status": "ok", "message": "statistics updated successfully"}
+    except Exception as e:
+        return {"status": "error", "message": f"database error: {str(e)}"}
+
+
+
 # ========== VEHICLE FUNCTIONS ==========
 
 def add_vehicle(file_name: str, board_number: str, state_number: str = "",

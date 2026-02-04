@@ -11,6 +11,7 @@ database.INIT()
 
 app.config["JSON_AS_ASCII"] = False
 app.config["JSON_SORT_KEYS"] = False
+app.config["SERVER_NAME"] = "rotorbus.ru"
 
 # ========== WEB ROUTES ==========
 
@@ -210,6 +211,41 @@ def reset_period_statistics(company: str):
         return error
     
     return jsonify(database.reset_period_statistics(db_path))
+
+@app.route("/api/statistics/<string:company>/user/<string:user_name>", methods=["PUT"])
+def update_user_statistics_endpoint(company: str, user_name: str):
+    """Обновить статистику пользователя напрямую"""
+    data = request.get_json()
+    
+    if not data:
+        return jsonify({"status": "error", "message": "no data provided"})
+    
+    db_path, error = _get_db_path(company)
+    if error:
+        return error
+    
+    # Валидация числовых полей
+    numeric_fields = [
+        'total_salary', 'period_salary',
+        'total_round_trips', 'period_round_trips',
+        'total_passengers', 'period_passengers'
+    ]
+    
+    validated_data = {}
+    for field in numeric_fields:
+        if field in data:
+            try:
+                value = data[field]
+                if value is not None and value != '':
+                    validated_data[field] = float(value)
+            except ValueError:
+                return jsonify({"status": "error", "message": f"{field} must be a number"})
+    
+    if not validated_data:
+        return jsonify({"status": "error", "message": "no valid fields to update"})
+    
+    return jsonify(database.update_user_statistics_direct(db_path, user_name, **validated_data))
+
 
 # ----- VEHICLE ENDPOINTS -----
 
@@ -589,5 +625,9 @@ def users_page():
     
     return render_template("users.html", company=company.capitalize(), users=users, url=request.url)
 
+@app.route("/img/<string:img>", subdomain="images")
+def subd(img):
+    return f"Image {img}"
+
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="127.0.0.7", port=5000, debug=True)
