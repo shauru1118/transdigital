@@ -55,7 +55,7 @@ def save_image():
 
     return jsonify({
         "status":"ok",
-        "url":f"rotorbus.ru/img/{file_name}"
+        "url":f"https://rotorbus.ru/img/{file_name}"
     })
 
 
