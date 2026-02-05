@@ -1,7 +1,10 @@
 from flask import Flask, render_template, send_file, request, jsonify
 from flask_cors import CORS
 from mainlib import database
+from PIL import Image
 import os
+from os import path
+import datetime
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
@@ -11,9 +14,46 @@ database.INIT()
 
 app.config["JSON_AS_ASCII"] = False
 app.config["JSON_SORT_KEYS"] = False
-app.config["SERVER_NAME"] = "rotorbus.ru"
+app.config["SERVER_NAME"] = "rotorbus.ru:5000"
+
+PHOTOBASE_DIR = "photobase"
+
+os.makedirs(PHOTOBASE_DIR, exist_ok=True)
 
 # ========== WEB ROUTES ==========
+
+@app.route("/img/<string:id>", methods=["GET"])
+def get_img(id):
+    return send_file(path.join(PHOTOBASE_DIR, f"{id}.jpg"))
+
+@app.route("/img", methods=["POST"])
+def save_image():
+    file = request.files["photo"]
+    file_name = datetime.datetime.now().strftime("%d%H%m%M%Y%S")
+    file.save(path.join(PHOTOBASE_DIR, file.filename))
+    try:
+        img = Image.open(path.join(PHOTOBASE_DIR, file.filename))
+        
+        if img.mode in ('RGBA', 'LA'):
+            img = img.convert('RGB')
+
+        output_path = file_name + '.jpg'
+        
+        img.save(path.join(PHOTOBASE_DIR, output_path), 'JPEG', quality=67, optimize=True)
+
+        os.remove(path.join(PHOTOBASE_DIR, file.filename))
+        
+    except Exception as e:
+        return jsonify({
+            "status":"error",
+            "message":f"{e}"
+        })
+
+    return jsonify({
+        "status":"ok",
+        "url":f"{request.base_url}/{file_name}"
+    })
+
 
 @app.route("/", methods=["GET"])
 def index():
@@ -625,9 +665,6 @@ def users_page():
     
     return render_template("users.html", company=company.capitalize(), users=users, url=request.url)
 
-@app.route("/img/<string:img>", subdomain="images")
-def subd(img):
-    return f"Image {img}"
-
 if __name__ == "__main__":
     app.run(host="127.0.0.7", port=5000, debug=True)
+
