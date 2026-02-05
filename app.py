@@ -24,8 +24,12 @@ os.makedirs(PHOTOBASE_DIR, exist_ok=True)
 
 @app.route("/img/<string:id>", methods=["GET"])
 def get_img(id):
-    return send_file(path.join(PHOTOBASE_DIR, f"{id}.jpg"))
-
+    if path.exists(path.join(PHOTOBASE_DIR, f"{id}.jpg")):
+        return send_file(path.join(PHOTOBASE_DIR, f"{id}.jpg"))
+    return jsonify({
+        "status":"error",
+        "message":"no such url"
+    })
 @app.route("/img", methods=["POST"])
 def save_image():
     file = request.files["photo"]
